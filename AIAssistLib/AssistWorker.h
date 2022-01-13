@@ -5,6 +5,7 @@
 #include<opencv2/opencv.hpp>
 
 #include "AssistConfig.h"
+#include "AssistState.h"
 #include "ImageDetection.h"
 #include "ImageDetectionTensorflow.h"
 #include "MouseKeyboard.h"
@@ -14,7 +15,7 @@ using namespace cv;
 using namespace std;
 
 
-//定义检测结果结构体
+//定义检测结果绘图显示用的结构体
 typedef struct DrawResults
 {
     DETECTRESULTS out;
@@ -40,6 +41,9 @@ public:
     void FireWork();
     void MoveWork();
     void DrawWork();
+    void MouseHookWork();
+    void KeyboardHookWork();
+    void PushWork();
     //弹出绘图mat对象，用于外部线程绘图，队列中没有数据时函数会阻塞等待
     Mat PopDrawMat();
 
@@ -48,8 +52,8 @@ public:
     void Pause();
 
 
-private:
-    // 唯一单实例对象
+public:
+    // 配置对象
     static AssistConfig* m_AssistConfig;
 
     //业务操作类
@@ -63,6 +67,11 @@ private:
     thread* fireThread = NULL;
     thread* moveThread = NULL;
     thread* drawThread = NULL;
+
+    //创建单独的鼠标hook线程核压枪执行线程
+    thread* mouseHookThread = NULL;
+    thread* keyboardHookThread = NULL;
+    thread* pushThread = NULL;
 
     //线程控制变量
     std::mutex m_detectMutex;
@@ -81,7 +90,14 @@ private:
     std::condition_variable m_drawCondition;
     std::atomic_bool m_drawPauseFlag = true;   ///<暂停标识
 
+    std::mutex m_pushMutex;
+    static std::condition_variable m_pushCondition;
+    std::atomic_bool m_pushPauseFlag = true;   ///<暂停标识
+    static std::atomic_bool m_startPush;   ///是否满足压枪条件标志
+
     std::atomic_bool m_stopFlag = false;   ///<停止标识
+
+    static std::atomic_bool m_startFire;   ///是否正在开枪，避免正在人工开枪时再执行自动开枪操作
 
     //检测结果队列
     BlockQueue<DRAWRESULTS>* drawQueue;
@@ -90,5 +106,13 @@ private:
 
     BlockQueue<Mat>* outDrawQueue;
 
+    //鼠标键盘hook句柄
+    HHOOK m_mouseHook = NULL;
+    HHOOK m_keyboardHook = NULL;
+
+    //武器类型
+    static WEAPONINFO m_weaponInfo;
+
 };
+
 

@@ -22,12 +22,23 @@ public:
     //获取屏幕缩放比例
     double static getScreensZoom();
 
+    //根据游戏窗口名，重置游戏相关配置
+    void changGameName(string newGameName);
+
+
     //配置数据模型
     //选择的游戏进程，不同的游戏，操作参数不一样
-    string processNames[2] = { "逆战", "TslGame" };
-    //string processName = "TslGame";
-    string processName = "逆战"; 
+    //注意绝地求生窗口标题是带一个空格的，有点坑
+    string gameNames[4] = { "绝地求生 ", "逆战", "穿越火线", "其他游戏"};
+    int maxModelWidths[4] = { 150, 200, 200, 200 };
+    int playerCentXs[4] = { screenRect.width * 860 / 1920 - detectRect.x, screenRect.width / 2 - detectRect.x, 
+        screenRect.width / 2 - detectRect.x, screenRect.width / 2 - detectRect.x };
 
+    int gameIndex = 0; //游戏索引ID
+    string gameName = "请选择游戏"; //游戏窗口名称
+    int maxModelWidth = maxModelWidths[0]; //游戏模型最大宽度
+    int playerCentX = playerCentXs[0]; //游戏玩家本人图像再检测区域内的位置,缺省按绝地求生游戏计算
+    
 
     //是否启用图像检测
     bool detectImg = true;
@@ -46,7 +57,7 @@ public:
     //是否自动追踪
     bool autoTrace = false;
     //自动追踪类型，1是持续追踪、2是鼠标右键瞄准触发追踪
-    double mouseMoveSlow = 0.5; //数据移动太快，用一个参数，要控制移动速度变慢,值要设置为小于1
+    double mouseMoveSlow = 0.6; //数据移动太快，用一个参数，要控制移动速度变慢,值要设置为小于1
     int autoTraceType = 1;
     int autoTraceTimeOut = 0; //鼠标右键瞄准触发追踪倒计时，缺省按30秒设置
 
@@ -60,13 +71,6 @@ public:
     //是否自动压枪
     bool autoPush = false;
 
-
-    //游戏相关属性
-    //游戏玩家本人的图像所在位置
-    int playerCentX = screenRect.width/2; 
-    //游戏模型最大宽度
-    //int maxModelWidth = detectWidth / 4;
-    int maxModelWidth = 150;
 
 private:
     AssistConfig();

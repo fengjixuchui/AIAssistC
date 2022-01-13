@@ -88,6 +88,7 @@ BEGIN_MESSAGE_MAP(CAIAssistDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK_AUTOTRACE, &CAIAssistDlg::OnBnClickedCheckAutotrace)
 	ON_BN_CLICKED(IDC_CHECK_AUTOFIRE, &CAIAssistDlg::OnBnClickedCheckAutofire)
 	ON_BN_CLICKED(IDC_CHECK_AUTOPRESS, &CAIAssistDlg::OnBnClickedCheckAutopress)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -124,8 +125,8 @@ BOOL CAIAssistDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	//初始化控件值
-	CString processName = CommUtil::StringToCString(m_AssistConfig->processName);
-	m_processName.SetWindowTextW(processName);
+	CString gameName = CommUtil::StringToCString(m_AssistConfig->gameName);
+	m_processName.SetWindowTextW(gameName);
 
 	m_imgDetect.SetCheck(m_AssistConfig->detectImg);
 	m_autoTrace.SetCheck(m_AssistConfig->autoTrace);
@@ -213,11 +214,15 @@ void CAIAssistDlg::OnBnClickedButtonFindprocess()
 
 	if(!name.IsEmpty()){
 		string nameStr = CommUtil::CStringToString(name);
-		m_AssistConfig->processName = nameStr;
+		m_AssistConfig->changGameName(nameStr);
 
 		//查找进程窗口，重新初始化AssistWorker
 		SystemUtil::findProcessWindowRect();
 		m_AssistWorker->ReInit();
+
+		//更新状态信息
+		string stat = AssistState::getStatInf();
+		m_status.SetWindowText(CommUtil::StringToCString(stat));
 	}
 }
 
@@ -231,6 +236,9 @@ void CAIAssistDlg::OnBnClickedCheckImgdetect()
 	else {
 		m_AssistConfig->detectImg = false;
 	}
+	//更新状态信息
+	string stat = AssistState::getStatInf();
+	m_status.SetWindowText(CommUtil::StringToCString(stat));
 }
 
 
@@ -243,6 +251,9 @@ void CAIAssistDlg::OnBnClickedCheckAutotrace()
 	else {
 		m_AssistConfig->autoTrace = false;
 	}
+	//更新状态信息
+	string stat = AssistState::getStatInf();
+	m_status.SetWindowText(CommUtil::StringToCString(stat));
 }
 
 
@@ -255,6 +266,9 @@ void CAIAssistDlg::OnBnClickedCheckAutofire()
 	else {
 		m_AssistConfig->autoFire = false;
 	}
+	//更新状态信息
+	string stat = AssistState::getStatInf();
+	m_status.SetWindowText(CommUtil::StringToCString(stat));
 }
 
 
@@ -267,6 +281,9 @@ void CAIAssistDlg::OnBnClickedCheckAutopress()
 	else {
 		m_AssistConfig->autoPush = false;
 	}
+	//更新状态信息
+	string stat = AssistState::getStatInf();
+	m_status.SetWindowText(CommUtil::StringToCString(stat));
 }
 
 
@@ -290,4 +307,24 @@ BOOL CAIAssistDlg::PreTranslateMessage(MSG* pMsg)
 	}
 	
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void CAIAssistDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
+	switch (nType)
+	{
+	case SIZE_RESTORED:
+		CommUtil::winSizeType = SIZE_RESTORED;
+		break;
+	case SIZE_MINIMIZED:
+		CommUtil::winSizeType = SIZE_MINIMIZED;
+		break;
+	case SIZE_MAXIMIZED:
+		CommUtil::winSizeType = SIZE_MAXIMIZED;
+		break;
+	}
 }
